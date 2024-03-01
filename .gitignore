@@ -2,6 +2,7 @@
 *.pyc
 *.whl
 *.egg-info
+__pycache__
 
 # Standard name for python virtual environments
 venv
