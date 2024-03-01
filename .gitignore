@@ -1,0 +1,16 @@
+# Python complementary files to be ignored
+*.pyc
+*.whl
+*.egg-info
+
+# Standard name for python virtual environments
+venv
+
+# Ignore .env
+.env
+
+# Ignore mypy files
+.mypy_cache
+
+# Ignore coverage report files
+.coverage
