@@ -1,3 +1,1 @@
-fire==0.5.0
-streamlit==1.31.1
-sentry_sdk==1.40.6
+rhdzmota[ext.streamlit_webapps]<5.0.0
