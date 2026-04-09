@@ -31,4 +31,4 @@ RUN npm run build
 
 RUN npm install -g serve pm2
 
-CMD ["serve -s dist -l 3000"]
+CMD ["serve", "-s", "dist", "-l", "3000"]
