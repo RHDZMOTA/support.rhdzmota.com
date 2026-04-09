@@ -8,28 +8,104 @@ export function SignInForm() {
   const [flow, setFlow] = useState<"signIn" | "signUp">("signIn");
   const [submitting, setSubmitting] = useState(false);
 
+  // When non-null, we're in the OTP verification step for this email
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+
+  // ── Step 2: OTP entry ──────────────────────────────────────────────────────
+  if (pendingEmail !== null) {
+    return (
+      <div className="w-full">
+        <div className="mb-6">
+          <p className="text-2xs font-mono text-graphite-muted tracking-widest uppercase mb-2">
+            email.verification
+          </p>
+          <p className="text-sm text-graphite-muted">
+            We sent an 8-digit code to{" "}
+            <span className="text-graphite font-medium">{pendingEmail}</span>.
+            Enter it below.
+          </p>
+        </div>
+        <form
+          className="flex flex-col gap-form-field"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setSubmitting(true);
+            const formData = new FormData(e.currentTarget);
+            formData.set("flow", "email-verification");
+            formData.set("email", pendingEmail);
+            void signIn("password", formData)
+              .catch((error) => {
+                console.error("OTP verification error:", error);
+                toast.error(
+                  "Invalid or expired code. Please check your email and try again."
+                );
+                setSubmitting(false);
+              });
+          }}
+        >
+          <input
+            className="auth-input-field text-center tracking-widest text-lg font-mono"
+            type="text"
+            name="code"
+            placeholder="00000000"
+            maxLength={8}
+            pattern="[0-9]{8}"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            required
+            autoFocus
+          />
+          <button className="auth-button" type="submit" disabled={submitting}>
+            {submitting ? "Verifying…" : "Verify Email"}
+          </button>
+          <button
+            type="button"
+            className="text-center text-sm text-graphite-muted hover:text-graphite transition-colors cursor-pointer"
+            onClick={() => {
+              setPendingEmail(null);
+              setSubmitting(false);
+            }}
+          >
+            ← Back
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  // ── Step 1: Credentials ────────────────────────────────────────────────────
   return (
     <div className="w-full">
       <form
         className="flex flex-col gap-form-field"
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
           setSubmitting(true);
           const formData = new FormData(e.target as HTMLFormElement);
           formData.set("flow", flow);
-          void signIn("password", formData).catch((error) => {
-            let toastTitle = "";
-            if (error.message.includes("Invalid password")) {
-              toastTitle = "Invalid password. Please try again.";
-            } else {
-              toastTitle =
-                flow === "signIn"
-                  ? "Could not sign in, did you mean to sign up?"
-                  : "Could not sign up, did you mean to sign in?";
-            }
-            toast.error(toastTitle);
-            setSubmitting(false);
-          });
+          const email = formData.get("email") as string;
+
+          void signIn("password", formData)
+            .then((result) => {
+              // If not immediately signed in → OTP was sent, move to step 2
+              if (!(result as { signingIn?: boolean })?.signingIn) {
+                setPendingEmail(email);
+              }
+              setSubmitting(false);
+            })
+            .catch((error) => {
+              let toastTitle = "";
+              if (error.message.includes("Invalid password")) {
+                toastTitle = "Invalid password. Please try again.";
+              } else {
+                toastTitle =
+                  flow === "signIn"
+                    ? "Could not sign in, did you mean to sign up?"
+                    : "Could not sign up, did you mean to sign in?";
+              }
+              toast.error(toastTitle);
+              setSubmitting(false);
+            });
         }}
       >
         <input
@@ -47,7 +123,13 @@ export function SignInForm() {
           required
         />
         <button className="auth-button" type="submit" disabled={submitting}>
-          {flow === "signIn" ? "Sign in" : "Sign up"}
+          {submitting
+            ? flow === "signIn"
+              ? "Signing in…"
+              : "Signing up…"
+            : flow === "signIn"
+              ? "Sign in"
+              : "Sign up"}
         </button>
         <div className="text-center text-sm text-secondary">
           <span>
