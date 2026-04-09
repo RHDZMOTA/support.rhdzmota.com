@@ -26,9 +26,6 @@ dist/
 # TypeScript
 *.tsbuildinfo
 
-# Convex auto-generated files
-convex/_generated/
-
 # Environment files
 .env
 .env.local
