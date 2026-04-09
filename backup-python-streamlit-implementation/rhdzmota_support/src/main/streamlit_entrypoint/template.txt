@@ -1,0 +1,15 @@
+import streamlit as st
+
+from rhdzmota.support.frontend.views.{page_name} import view
+
+# Set page config
+st.set_page_config(
+    page_icon="./favicon.png",
+    layout="wide",
+)
+
+# Register backend (if any)
+# TBD
+
+# Execute streamlit frontend view
+view()

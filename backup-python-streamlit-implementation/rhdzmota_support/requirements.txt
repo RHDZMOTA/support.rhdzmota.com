@@ -1,0 +1,1 @@
+rhdzmota[ext.streamlit_webapps]<5.0.0
