@@ -1,28 +1,28 @@
 /**
  * Custom Resend OTP provider for @convex-dev/auth.
  *
- * Mirrors the official convex-auth-example pattern:
- * https://github.com/get-convex/convex-auth-example/blob/main/convex/otp/ResendOTP.ts
- *
- * Uses native fetch (Convex runtime) instead of the Resend SDK to avoid ESM
- * bundling issues. Uses oslo/crypto for token generation (already a transitive
- * dependency of @convex-dev/auth).
+ * Uses `Resend` from `@auth/core/providers/resend` as the base provider
+ * (as per the official convex-auth-example / docs pattern for Password verify),
+ * overriding sendVerificationRequest with native fetch to avoid the ESM
+ * bundling issues of the `resend` npm SDK inside the Convex runtime.
  *
  * Environment variables (set in the Convex dashboard or via CLI):
  *   AUTH_RESEND_KEY  — Resend API key (starts with re_...)
  *   AUTH_EMAIL_FROM  — Verified sender, e.g. "RHDZMOTA Support <hello@yourdomain.com>"
  */
-import { Email } from "@convex-dev/auth/providers/Email";
-import { alphabet, generateRandomString } from "oslo/crypto";
+import Resend from "@auth/core/providers/resend";
 
-export const ResendOTP = Email({
+export const ResendOTP = Resend({
   id: "resend-otp",
   apiKey: process.env.AUTH_RESEND_KEY,
   maxAge: 60 * 60, // 1 hour
 
   async generateVerificationToken() {
-    // 8-digit numeric OTP
-    return generateRandomString(8, alphabet("0-9"));
+    // 8-digit numeric OTP — uses native Web Crypto (available in Convex runtime)
+    const buf = new Uint32Array(1);
+    crypto.getRandomValues(buf);
+    // Mod by 100_000_000 to get 8 digits, then zero-pad
+    return String(buf[0] % 100_000_000).padStart(8, "0");
   },
 
   async sendVerificationRequest({ identifier: email, provider, token }) {
