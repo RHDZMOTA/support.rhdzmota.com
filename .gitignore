@@ -7,13 +7,38 @@ __pycache__
 # Standard name for python virtual environments
 venv
 
-# Ignore .env
-.env
-
 # Ignore mypy files
 .mypy_cache
 
 # Ignore coverage report files
 .coverage
 
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vite build output
+dist/
+.vite/
+
+# TypeScript
+*.tsbuildinfo
+
+# Convex auto-generated files
+convex/_generated/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
 .DS_Store
